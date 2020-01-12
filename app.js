@@ -40,6 +40,11 @@ const tasks = [
   // Элементы DOM
 
   const ulConteiner = document.querySelector('.tasks-list-section .list-group');
+  const form = document.forms['addTask'];
+  const taskTitle = form.elements['title'];
+  const taskBody = form.elements['body'];
+  
+  
   
   // Отображение всех задач в списке задач
   renderAllTask(objOfTask);
@@ -80,6 +85,37 @@ const tasks = [
 
     return li;
   }
+  // --------------------------------------
 
-  //--------------------------------------
+  // Обработка формы и добавление задачи в список задач
+  form.addEventListener('submit', hendlerFormTask);
+
+  function hendlerFormTask (evt) {
+    evt.preventDefault();
+
+    const taskTitleValue = taskTitle.value;
+    const taskBodyValue = taskBody.value;
+    
+    if (!taskTitleValue || !taskBodyValue) {
+      alert('Заполните поля Title и Body');
+      return;
+    }
+    const task = createNewTask(taskTitleValue, taskBodyValue);
+    const listItem = listItemTemplate(task);
+    ulConteiner.insertAdjacentElement('afterbegin', listItem);
+    form.reset();
+  }
+
+  function createNewTask (title, body) {
+    const newTask = {
+      title,
+      body,
+      completed: false,
+      _id: `task-${Math.random()}`
+    };
+
+    objOfTask[newTask._id] = newTask;
+    return {...newTask}
+  }
+  // --------------------------------------------------
 })(tasks);
