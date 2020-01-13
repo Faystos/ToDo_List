@@ -37,85 +37,107 @@ const tasks = [
     return acc;
   }, {});
 
-  // Элементы DOM
+  // Элементы DOM.
+    const ulConteiner = document.querySelector('.tasks-list-section .list-group');
+    const form = document.forms['addTask'];
+    const taskTitle = form.elements['title'];
+    const taskBody = form.elements['body'];  
+  
+  // Отображение всех задач в списке задач.
+    function renderAllTask (taskList) {
+      if (!taskList) {
+        console.error('Передайте taskList');
+        return;
+      }
 
-  const ulConteiner = document.querySelector('.tasks-list-section .list-group');
-  const form = document.forms['addTask'];
-  const taskTitle = form.elements['title'];
-  const taskBody = form.elements['body'];
-  
-  
-  
-  // Отображение всех задач в списке задач
-  renderAllTask(objOfTask);
-
-  function renderAllTask (taskList) {
-    if (!taskList) {
-      console.error('Передайте taskList');
-      return;
+      const fragmentLi = document.createDocumentFragment();
+      Object.values(taskList).forEach(task => {
+        const li = listItemTemplate(task);
+        fragmentLi.appendChild(li);
+      });
+      ulConteiner.appendChild(fragmentLi);
     }
 
-    const fragmentLi = document.createDocumentFragment();
-    Object.values(taskList).forEach(task => {
-      const li = listItemTemplate(task);
-      fragmentLi.appendChild(li);
-     });
-     ulConteiner.appendChild(fragmentLi);
-  }
+    function listItemTemplate ({_id, title, body} = {}) {
+      const li = document.createElement('li');
+      li.classList.add('list-group-item', 'd-flex', 'align-items-center', 'flex-wrap', 'mt-2');
+      li.setAttribute('data-task-id', _id);
 
-  function listItemTemplate ({_id, title, body} = {}) {
-    const li = document.createElement('li');
-    li.classList.add('list-group-item', 'd-flex', 'align-items-center', 'flex-wrap', 'mt-2');
+      const span = document.createElement('span');
+      span.textContent = title;
+      span.style.fontWeight = 'bold';
 
-    const span = document.createElement('span');
-    span.textContent = title;
-    span.style.fontWeight = 'bold';
+      const deleteBtn = document.createElement('button');
+      deleteBtn.classList.add('btn', 'btn-danger', 'ml-auto', 'delete-btn');
+      deleteBtn.textContent = 'Delete task';
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.classList.add('btn', 'btn-danger', 'ml-auto', 'delete-btn');
-    deleteBtn.textContent = 'Delete task';
+      const article = document.createElement('p');
+      article.classList.add('mt-2', 'w-100');
+      article.textContent = body;
 
-    const article = document.createElement('p');
-    article.classList.add('mt-2', 'w-100');
-    article.textContent = body;
+      li.appendChild(span);
+      li.appendChild(article);
+      li.appendChild(deleteBtn);
 
-    li.appendChild(span);
-    li.appendChild(article);
-    li.appendChild(deleteBtn);
+      return li;
+    }  
 
-    return li;
-  }
-  // --------------------------------------
+  // Обработка формы и добавление задачи в список задач.
+    function hendlerFormTask (evt) {
+      evt.preventDefault();
 
-  // Обработка формы и добавление задачи в список задач
-  form.addEventListener('submit', hendlerFormTask);
-
-  function hendlerFormTask (evt) {
-    evt.preventDefault();
-
-    const taskTitleValue = taskTitle.value;
-    const taskBodyValue = taskBody.value;
-    
-    if (!taskTitleValue || !taskBodyValue) {
-      alert('Заполните поля Title и Body');
-      return;
+      const taskTitleValue = taskTitle.value;
+      const taskBodyValue = taskBody.value;
+      
+      if (!taskTitleValue || !taskBodyValue) {
+        alert('Заполните поля Title и Body');
+        return;
+      }
+      const task = createNewTask(taskTitleValue, taskBodyValue);
+      const listItem = listItemTemplate(task);
+      ulConteiner.insertAdjacentElement('afterbegin', listItem);
+      form.reset();
     }
-    const task = createNewTask(taskTitleValue, taskBodyValue);
-    const listItem = listItemTemplate(task);
-    ulConteiner.insertAdjacentElement('afterbegin', listItem);
-    form.reset();
-  }
 
-  function createNewTask (title, body) {
-    const newTask = {
-      title,
-      body,
-      completed: false,
-      _id: `task-${Math.random()}`
-    };
+    function createNewTask (title, body) {
+      const newTask = {
+        title,
+        body,
+        completed: false,
+        _id: `task-${Math.random()}`
+      };
+      objOfTask[newTask._id] = newTask;
 
-    objOfTask[newTask._id] = newTask;
-    return {...newTask}
-  }
-  // --------------------------------------------------
+      return {...newTask}
+    }
+  
+  // Обработка удаления задачи из списка задач.
+    function onDeleteTask ({target}) {
+      if (target.classList.contains('delete-btn')){      
+        const parent = target.closest('[data-task-id]');
+        const id = parent.dataset.taskId;
+        const confirmed = deleteTask(id);
+        deleteTaskFrom(confirmed, parent);      
+      }
+    }
+
+    function deleteTask (id) {
+      const {title} = objOfTask[id];    
+      const isConfirm = confirm(`Вы точно хотите удалить задачу ${title}`);
+
+      if (!isConfirm) return isConfirm;
+      delete objOfTask[id];
+
+      return isConfirm;
+    }
+
+    function deleteTaskFrom (confirmed, el) {
+      if (!confirmed) return;
+      el.remove();
+    }
+ 
+  // Выполнение.
+    renderAllTask(objOfTask);
+    form.addEventListener('submit', hendlerFormTask);
+    ulConteiner.addEventListener('click', onDeleteTask);
 })(tasks);
