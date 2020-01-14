@@ -105,7 +105,7 @@ const tasks = [
     },
   };
   
-  let lastSelectedTheme = 'default';
+  let lastSelectedTheme = localStorage.getItem('app_theme') || 'default';  
 
   // Элементы DOM.
     const ulConteiner = document.querySelector('.tasks-list-section .list-group');
@@ -217,6 +217,7 @@ const tasks = [
     }
     setTheme(selectedTheme);
     lastSelectedTheme = selectedTheme;
+    localStorage.setItem('app_theme', lastSelectedTheme);
   }
 
   function setTheme (nameTheme) {
@@ -227,6 +228,7 @@ const tasks = [
   }  
  
   // Выполнение.
+    setTheme(lastSelectedTheme);
     renderAllTask(objOfTask);
     form.addEventListener('submit', hendlerFormTask);
     ulConteiner.addEventListener('click', onDeleteTask);
